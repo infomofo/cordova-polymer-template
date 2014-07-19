@@ -1,0 +1,13 @@
+{
+    "name": "package",
+    "version": "0.0.0",
+    "dependencies": {},
+    "devDependencies": {
+        "cordova": "~2.9.0",
+        "grunt": "~0.4.1",
+        "grunt-contrib-jshint": "~0.6.0",
+        "grunt-contrib-watch": "~0.4.0",
+        "grunt-shell": "~0.3.0",
+        "matchdep": "~0.1.1"
+    }
+}
