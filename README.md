@@ -1,10 +1,12 @@
 Generic Cordova Polymer Application
 ===================================
 
-This is a generic app framework that can run as a standalone webpage, an android
-app, or an ios app.  
+This is a generic app framework with polymer ui elements that can run as a
+standalone webpage, an android app, or an ios app.  
 
 ![A Demo Polymer App running in Grunt](docs/images/PolymerAppInGrunt.png)
+![A Demo Polymer App running on IOS](docs/images/PolymerAppInIOS.png)
+![A Demo Polymer App running on Android](docs/images/PolymerAppInAndroid.png)
 
 Features
 --------
@@ -28,7 +30,8 @@ First time Setup
 
 1. run ``npm install -g yo`` to install yo, grunt-cli and bower
 2. run ``npm install -g cordova`` to install the cordova mobile utility
-3. run ``export PATH=/usr/local/share/npm/bin:$PATH`` to ensure command line access to modules.
+3. run ``export PATH=/usr/local/share/npm/bin:$PATH`` to ensure command line
+access to modules.
 
 ### Setting up the repo after cloning for the first time
 
@@ -40,9 +43,11 @@ First time Setup
 
 ### Copying settings to android and ios app
 
-Run this the first time, and any time after you make modifications to the ``www`` directory.
+Run this the first time, and any time after you make modifications to the ``www``
+directory.
 
-1. run ``cordova build`` to initialize the platforms directory with ios and android applications
+1. run ``cordova build`` to initialize the platforms directory with ios and
+android applications
 
 Standalone web app
 ------------------
@@ -76,7 +81,9 @@ IOS
 
 ### Running the ios app
 
-The ios app can be run in an emulator, which can be installed via xcode.  It can only be installed on devices with a valid provisioning profile, which requires a paid apple developer account.
+The ios app can be run in an emulator, which can be installed via xcode.  It can
+only be installed on devices with a valid provisioning profile, which requires a
+paid apple developer account.
 
 To run on a emulator
 
@@ -94,7 +101,8 @@ To run on a connected device (requires provisioning)
 
 ### Debugging the ios app in safari
 
-1. At the command line run ``defaults write com.apple.Safari IncludeDebugMenu 1`` (you only need to do this once)
+1. At the command line run ``defaults write com.apple.Safari IncludeDebugMenu 1``
+(you only need to do this once)
 2. Launch the app in the emulator
 3. Launch safari
 4. Connect to the Iphone Simulator in the Develop menu
@@ -121,11 +129,13 @@ File documentation
 ------------------
 ### Project files
 * **``README.md``** This file
-* **``bower.json``** A list of all json dependencies.  _Do not modify directly_.  Add new dependencies with ``bower install <dependency name> --save``
+* **``bower.json``** A list of all json dependencies.  _Do not modify directly_.  
+Add new dependencies with ``bower install <dependency name> --save``
 * **``config.xml``** A config file for cordova.
 * **``www/``** All of the actual content of the app is contained in this directory
 
-  * **``index.html``** The skeleton of one-page application mostly just contains javascript and css imports.  Very little modifications should be made to this, other than new bower dependencies or css.
+  * **``index.html``** The skeleton of one-page application mostly just contains
+  javascript and css imports.  Very little modifications should be made to this, other than new bower dependencies or css.
   * **``manifest.json``** Defines how the chrome app will be packaged, including identifiers, oauth behaviors, permissions, icons, and version name.
   * **``background.js``** Defines the behavior of the chrome app, including the landing page, and the window size of the chrome extension (does not affect ios or android).
   * **``assets/``** Contains icons that will be used to represent the app

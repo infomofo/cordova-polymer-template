@@ -35,9 +35,11 @@
         <link rel="import" href="bower_components/core-icon-button/core-icon-button.html">
         <link rel="import" href="bower_components/core-toolbar/core-toolbar.html">
         <link rel="import" href="bower_components/core-menu/core-submenu.html">
-        <link rel="import" href="bower_components/core-menu/core-submenu.html">
+        <link rel="import" href="bower_components/core-menu-button/core-menu-button.html">
+        <link rel="import" href="bower_components/core-overlay/core-overlay.html">
         <link rel="import" href="bower_components/paper-tabs/paper-tabs.html">
-        <link rel="import" href="bower_components/paper-tabs/paper-tab.html">
+        <link rel="import" href="bower_components/paper-menu-button/paper-menu-button.html">
+        <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
         <title>Hello World</title>
     </head>
     <body unresolved touch-action="auto">
@@ -49,7 +51,16 @@
             <core-item label="Item2" icon="settings" id="core_item1" horizontal center layout></core-item>
           </core-menu>
         </core-header-panel>
-        <div id="div" tool>X</div>
+        <div id="div" tool one flex horizontal layout center>
+          Demo
+          <div flex></div>
+          <core-icon-button icon="search" id="core_icon_button1" theme="core-light-theme"></core-icon-button>
+          <core-menu-button icon="more-vert" selected="0" halign="right" valueattr="name" id="core_menu_button">
+            <core-item label="Cut" icon="content-cut" size="24" id="core_item2" horizontal center layout active></core-item>
+            <core-item label="Copy" icon="content-copy" size="24" id="core_item3" horizontal center layout></core-item>
+            <core-item label="Paste" icon="content-paste" size="24" id="core_item4" horizontal center layout></core-item>
+          </core-menu-button>
+        </div>
         <paper-tabs selected="0">
           <paper-tab>TAB 1</paper-tab>
           <paper-tab>TAB 2</paper-tab>

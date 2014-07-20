@@ -1,3 +1,15 @@
 body {
     font-family: "Roboto", sans-serif;
 }
+
+#overlay {
+  position: absolute;
+  left: 0px;
+  top: 40px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  /* overlay styling must be complete */
+  font-size: 1rem;
+}
