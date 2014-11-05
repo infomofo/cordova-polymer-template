@@ -1,7 +1,9 @@
-.idea
 node_modules
 dist
+test/temp
+.sass-cache
+bower_components
+app/bower_components
 .tmp
-www/bower_components
-platforms/*
-plugins/*
+test/bower_components/
+cordova

@@ -1,200 +1,367 @@
-(function () {
-    'use strict';
-    var cordova = require('cordova');
+'use strict';
+var LIVERELOAD_PORT = 35729;
+var lrSnippet = require('connect-livereload')({port: LIVERELOAD_PORT});
+var mountFolder = function (connect, dir) {
+  return connect.static(require('path').resolve(dir));
+};
 
-    module.exports = function (grunt) {
-        // load all grunt tasks
-        require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
+// # Globbing
+// for performance reasons we're only matching one level down:
+// 'test/spec/{,*/}*.js'
+// use this if you want to match all subfolders:
+// 'test/spec/**/*.js'
 
-        // configurable paths
-        var yeomanConfig = {
-            app: 'www'
-        };
+module.exports = function (grunt) {
+  // show elapsed time at the end
+  require('time-grunt')(grunt);
+  // load all grunt tasks
+  require('load-grunt-tasks')(grunt);
 
-        try {
-            yeomanConfig.app = require('./component.json').appPath || yeomanConfig.app;
-        } catch (e) {
+  // configurable paths
+  var yeomanConfig = {
+    app: 'app',
+    dist: 'dist',
+    cordova: 'cordova'
+  };
+
+  grunt.initConfig({
+    yeoman: yeomanConfig,
+    watch: {
+      options: {
+        nospawn: true,
+        livereload: { liveCSS: false }
+      },
+      livereload: {
+        options: {
+          livereload: true
+        },
+        files: [
+          '<%= yeoman.app %>/*.html',
+          '<%= yeoman.app %>/elements/{,*/}*.html',
+          '{.tmp,<%= yeoman.app %>}/elements/{,*/}*.css',
+          '{.tmp,<%= yeoman.app %>}/styles/{,*/}*.css',
+          '{.tmp,<%= yeoman.app %>}/scripts/{,*/}*.js',
+          '<%= yeoman.app %>/images/{,*/}*.{png,jpg,jpeg,gif,webp}'
+        ]
+      },
+      js: {
+        files: ['<%= yeoman.app %>/scripts/{,*/}*.js'],
+        tasks: ['jshint']
+      },
+      styles: {
+        files: [
+          '<%= yeoman.app %>/styles/{,*/}*.css',
+          '<%= yeoman.app %>/elements/{,*/}*.css'
+        ],
+        tasks: ['copy:styles', 'autoprefixer:server']
+      },
+      sass: {
+        files: [
+          '<%= yeoman.app %>/styles/{,*/}*.{scss,sass}',
+          '<%= yeoman.app %>/elements/{,*/}*.{scss,sass}'
+        ],
+        tasks: ['sass:server', 'autoprefixer:server']
+      }
+    },
+    // Compiles Sass to CSS and generates necessary files if requested
+    sass: {
+      options: {
+        sourcemap: true,
+        loadPath: 'bower_components'
+      },
+      dist: {
+        options: {
+          style: 'compressed'
+        },
+        files: [{
+          expand: true,
+          cwd: '<%= yeoman.app %>',
+          src: ['styles/{,*/}*.{scss,sass}', 'elements/{,*/}*.{scss,sass}'],
+          dest: '<%= yeoman.dist %>',
+          ext: '.css'
+        }]
+      },
+      server: {
+        files: [{
+          expand: true,
+          cwd: '<%= yeoman.app %>',
+          src: ['styles/{,*/}*.{scss,sass}', 'elements/{,*/}*.{scss,sass}'],
+          dest: '.tmp',
+          ext: '.css'
+        }]
+      }
+    },
+    autoprefixer: {
+      options: {
+        browsers: ['last 2 versions']
+      },
+      server: {
+        files: [{
+          expand: true,
+          cwd: '.tmp',
+          src: '**/*.css',
+          dest: '.tmp'
+        }]
+      },
+      dist: {
+        files: [{
+          expand: true,
+          cwd: '<%= yeoman.dist %>',
+          src: ['**/*.css', '!bower_components/**/*.css'],
+          dest: '<%= yeoman.dist %>'
+        }]
+      }
+    },
+    connect: {
+      options: {
+        port: 9000,
+        // change this to '0.0.0.0' to access the server from outside
+        hostname: 'localhost'
+      },
+      livereload: {
+        options: {
+          middleware: function (connect) {
+            return [
+              lrSnippet,
+              mountFolder(connect, '.tmp'),
+              mountFolder(connect, yeomanConfig.app)
+            ];
+          }
         }
+      },
+      test: {
+        options: {
+          open: {
+            target: 'http://localhost:<%= connect.options.port %>/test'
+          },
+          middleware: function (connect) {
+            return [
+              mountFolder(connect, yeomanConfig.app)
+            ];
+          },
+          keepalive: true
+        }
+      },
+      dist: {
+        options: {
+          middleware: function (connect) {
+            return [
+              mountFolder(connect, yeomanConfig.dist)
+            ];
+          }
+        }
+      }
+    },
+    open: {
+      server: {
+        path: 'http://localhost:<%= connect.options.port %>'
+      }
+    },
+    clean: {
+      dist: ['.tmp', '<%= yeoman.dist %>/*'],
+      server: '.tmp'
+    },
+    jshint: {
+      options: {
+        jshintrc: '.jshintrc',
+        reporter: require('jshint-stylish')
+      },
+      all: [
+        '<%= yeoman.app %>/scripts/{,*/}*.js',
+        '!<%= yeoman.app %>/scripts/vendor/*',
+        'test/spec/{,*/}*.js'
+      ]
+    },
+    useminPrepare: {
+      html: '<%= yeoman.app %>/index.html',
+      options: {
+        dest: '<%= yeoman.dist %>'
+      }
+    },
+    usemin: {
+      html: ['<%= yeoman.dist %>/{,*/}*.html'],
+      css: ['<%= yeoman.dist %>/styles/{,*/}*.css'],
+      options: {
+        dirs: ['<%= yeoman.dist %>'],
+        blockReplacements: {
+          vulcanized: function (block) {
+            return '<link rel="import" href="' + block.dest + '">';
+          }
+        }
+      }
+    },
+    vulcanize: {
+      default: {
+        options: {
+          strip: true
+        },
+        files: {
+          '<%= yeoman.dist %>/elements/elements.vulcanized.html': [
+            '<%= yeoman.dist %>/elements/elements.html'
+          ]
+        }
+      }
+    },
+    imagemin: {
+      dist: {
+        files: [{
+          expand: true,
+          cwd: '<%= yeoman.app %>/images',
+          src: '{,*/}*.{png,jpg,jpeg}',
+          dest: '<%= yeoman.dist %>/images'
+        }]
+      }
+    },
+    minifyHtml: {
+      options: {
+        quotes: true,
+        empty: true
+      },
+      app: {
+        files: [{
+          expand: true,
+          cwd: '<%= yeoman.dist %>',
+          src: '*.html',
+          dest: '<%= yeoman.dist %>'
+        }]
+      }
+    },
+    copy: {
+      dist: {
+        files: [{
+          expand: true,
+          dot: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '<%= yeoman.dist %>',
+          src: [
+            '*.{ico,txt}',
+            '.htaccess',
+            '*.html',
+            'elements/**',
+            '!elements/**/*.scss',
+            'images/{,*/}*.{webp,gif}',
+            'bower_components/**'
+          ]
+        }]
+      },
+      styles: {
+        files: [{
+          expand: true,
+          cwd: '<%= yeoman.app %>',
+          dest: '.tmp',
+          src: ['{styles,elements}/{,*/}*.css']
+        }]
+      }
+    },
+    // See this tutorial if you'd like to run PageSpeed
+    // against localhost: http://www.jamescryer.com/2014/06/12/grunt-pagespeed-and-ngrok-locally-testing/
+    pagespeed: {
+      options: {
+        // By default, we use the PageSpeed Insights
+        // free (no API key) tier. You can use a Google
+        // Developer API key if you have one. See
+        // http://goo.gl/RkN0vE for info
+        nokey: true
+      },
+      // Update `url` below to the public URL for your site
+      mobile: {
+        options: {
+          url: "https://developers.google.com/web/fundamentals/",
+          locale: "en_GB",
+          strategy: "mobile",
+          threshold: 80
+        }
+      }
+    },
+    shell: {
+      cordova_clean: {
+        command: 'rm -Rf <%= yeoman.cordova %>'
+      },
+      cordova_create: {
+          command: 'cordova create <%= yeoman.cordova %> com.infomofo.cordova "Cordova Sample App" --copy-from=<%= yeoman.dist %>'
+      },
+      cordova_platform_ios: {
+          command: 'cordova platform add ios',
+          options: {
+              stderr: false,
+              execOptions: {
+                  cwd: '<%= yeoman.cordova %>'
+              }
+          }
+      },
+      cordova_platform_android: {
+          command: 'cordova platform add android',
+          options: {
+              stderr: false,
+              execOptions: {
+                  cwd: '<%= yeoman.cordova %>'
+              }
+          }
+      },
+      cordova_prepare: {
+          command: 'cordova prepare',
+          options: {
+              stderr: false,
+              execOptions: {
+                  cwd: '<%= yeoman.cordova %>'
+              }
+          }
+      }
+    }
+  });
 
-        var device = {
-            platform: grunt.option('platform') || 'all',
-            family: grunt.option('family') || 'default',
-            target: grunt.option('target') || 'emulator'
-        };
+  grunt.registerTask('server', function (target) {
+    grunt.log.warn('The `server` task has been deprecated. Use `grunt serve` to start a server.');
+    grunt.task.run(['serve:' + target]);
+  });
 
-        grunt.initConfig({
-            yeoman: yeomanConfig,
-            jshint: {
-                gruntfile: ['Gruntfile.js'],
-                files: ['www/**/*.js', 'test/**/*.js'],
-                options: {
-                    // options here to override JSHint defaults
-                    globals: {
-                        console: true,
-                        module: true
-                    }
-                }
-            },
-            watchfiles: {
-                all: [
-                    'www/{,*/}*.html',
-                    'www/js/{,*/,*/}*.js',
-                    'www/css/{,*/}*.css',
-                    'www/img/{,*/}*.{png,jpg,jpeg,gif,webp,svg}'
-                ]
-            },
-            watch: {
-                scripts: {
-                    files: [
-                        'www/js/**/*.js',
-                        'www/css/**/*.css'
-                    ],
-                    tasks: ['jshint']
-                },
-                liveserve: {
-                    options: {
-                        livereload: true,
-                    },
-                    files: ['<%=watchfiles.all %>'],
-                    tasks: ['shell:serveend', 'cordova-prepareserve']
-                },
-                liveemulate: {
-                    files: ['<%=watchfiles.all %>'],
-                    tasks: ['cordova-emulate-end', 'cordova-buildemulate']
-                },
-                livedevice: {
-                    files: ['<%=watchfiles.all %>'],
-                    tasks: ['cordova-buildrun']
-                }
-            },
-            shell: {
-                iossimstart: {
-                    command: 'ios-sim launch platforms/ios/build/HelloCordova.app --exit' + (device.family !== 'default' ? ' --family ' + device.family : ''),
-                    options: {
-                        stdout: true
-                    }
-                },
-                iossimend: {
-                    command: 'killall -9 "iPhone Simulator"'
-                },
-                serveend: {
-                    command: 'killall -9 "cordova serve"'
-                },
-                rippleend: {
-                    command: 'killall -9 "cordova ripple"'
-                }
-            }
-        });
+  grunt.registerTask('serve', function (target) {
+    if (target === 'dist') {
+      return grunt.task.run(['build', 'open', 'connect:dist:keepalive']);
+    }
 
-        // Cordova Tasks
-        grunt.registerTask('cordova-prepare', 'Cordova prepare tasks', function () {
-            var done = this.async();
+    grunt.task.run([
+      'clean:server',
+      'sass:server',
+      'copy:styles',
+      'autoprefixer:server',
+      'connect:livereload',
+      'open',
+      'watch'
+    ]);
+  });
 
-            if (device.platform === 'all') {
-                // Prepare all platforms
-                cordova.prepare(done);
-            } else {
-                cordova.prepare(device.platform, done);
-            }
-        });
+  grunt.registerTask('test', [
+    'clean:server',
+    'connect:test'
+  ]);
 
-        grunt.registerTask('cordova-build', 'Cordova building tasks', function () {
-            var done = this.async();
+  grunt.registerTask('build', [
+    'clean:dist',
+    'sass',
+    'copy',
+    'useminPrepare',
+    'imagemin',
+    'concat',
+    'autoprefixer',
+    'uglify',
+    'vulcanize',
+    'usemin',
+    'minifyHtml'
+  ]);
 
-            if (device.platform === 'all') {
-                // Build all platforms
-                cordova.build(done);
-            } else {
-                cordova.build(device.platform, done);
-            }
-        });
+  grunt.registerTask('cordova', [
+    'shell:cordova_clean',
+    'shell:cordova_create',
+    'shell:cordova_platform_android',
+    'shell:cordova_platform_ios',
+    'shell:cordova_prepare'
+  ]);
 
-        grunt.registerTask('cordova-run', 'Cordova running tasks', function () {
-            var done = this.async();
-
-            if (device.platform === 'all') {
-                // Build all platforms
-                cordova.run();
-            } else {
-                cordova.run(device.platform);
-            }
-
-            done();
-        });
-
-        grunt.registerTask('cordova-emulate', 'Cordova emulation tasks', function () {
-            var done = this.async();
-
-            if (device.platform === 'all') {
-                // Emulate all platforms
-                cordova.emulate();
-            } else {
-                if (device.platform === 'ios') {
-                    grunt.task.run('shell:iossimstart');
-                } else {
-                    cordova.emulate(device.platform, function() {
-                        grunt.task.run('cordova-emulate-end');
-                    });
-                }
-            }
-
-            done();
-        });
-
-        grunt.registerTask('cordova-serve', 'Cordova serve tasks', function () {
-            var done = this.async();
-
-            if (device.platform === 'all') {
-                // Emulate all platforms
-                grunt.fatal("Platform required. Eg. ` --platform=ios`");
-            } else {
-                cordova.serve(device.platform);
-                done();
-            }
-        });
-
-        grunt.registerTask('cordova-ripple', 'Cordova ripple tasks', function () {
-            var done = this.async();
-
-            if (device.platform === 'all') {
-                // Emulate all platforms
-                grunt.fatal("Platform required. Eg. ` --platform=ios`");
-            } else {
-                cordova.ripple(device.platform);
-                done();
-            }
-        });
-
-        grunt.registerTask('cordova-emulate-end', 'Cordova emulation tasks', function () {
-            if (device.platform === 'all' || device.platform === 'ios') {
-                grunt.task.run('shell:iossimend');
-            }
-        });
-
-        grunt.registerTask('cordova-buildemulate', [
-            'cordova-build',
-            'cordova-emulate'
-        ]);
-
-        grunt.registerTask('cordova-buildrun', [
-            'cordova-build',
-            'cordova-run'
-        ]);
-
-        grunt.registerTask('cordova-prepareserve', [
-            'cordova-prepare',
-            'cordova-serve'
-        ]);
-
-        grunt.registerTask('serve', ['cordova-prepareserve', 'watch:liveserve']);
-        grunt.registerTask('ripple', ['cordova-prepare', 'cordova-ripple', 'watch:liveripple']);
-
-        grunt.registerTask('emulate', ['cordova-buildemulate']);
-        grunt.registerTask('live-emulate', ['cordova-buildemulate', 'watch:liveemulate']);
-
-        grunt.registerTask('device', ['cordova-buildrun']);
-        grunt.registerTask('live-device', ['cordova-buildrun', 'watch:livedevice']);
-
-        grunt.registerTask('default', ['serve']);
-    };
-}());
+  grunt.registerTask('default', [
+    'jshint',
+    // 'test'
+    'build',
+    'cordova'
+  ]);
+};
